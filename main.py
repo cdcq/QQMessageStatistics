@@ -4,7 +4,6 @@ import time
 import jieba.posseg as pseg
 import yaml
 from wordcloud import WordCloud
-from tkinter import filedialog
 
 
 def split_content(content):
