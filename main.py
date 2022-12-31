@@ -69,33 +69,55 @@ def main():
     sessions = split_txt(s)
     sessions_cnt = len(sessions)
     word_count = {}
+    word_count_user = {}
     processed = 0
     for i in sessions:
         for j in i['msg']:
-            if j['source'] != configs['user_name']:
-                continue
             if start_time <= j['time'] < end_time:
                 words = pseg.cut(j['content'])
                 for k, pt in words:
                     if len(k) == 1:
                         continue
+                        
                     if k not in word_count:
                         word_count[k] = 1
                     else:
                         word_count[k] = word_count[k] + 1
 
+                    if j['source'] == configs['user_name']:
+                        if k not in word_count_user:
+                            word_count_user[k] = 1
+                        else:
+                            word_count_user[k] = word_count_user[k] + 1
+
         processed = processed + 1
         print('processing:', str(round(processed / sessions_cnt * 100, 2)) + '%')
         sys.stdout.flush()
 
+    sum_cnt = 0
+    for i in word_count:
+        sum_cnt = sum_cnt + word_count[i]
+    sum_cnt_user = 0
+    for i in word_count_user:
+        sum_cnt_user = sum_cnt_user + word_count_user[i]
+
+    diff_rate = {}
+    for i in word_count_user:
+        diff_rate[i] = word_count_user[i] / sum_cnt_user - word_count[i] / sum_cnt
+
     with open('./result.txt', 'w') as f:
-        for i in sorted(word_count.items(), key=lambda kv: (kv[1], kv[0]), reverse=True):
-            f.write(str(i) + '\n')
+        for i in sorted(diff_rate.items(), key=lambda kv: (kv[1], kv[0]), reverse=True):
+            f.write(str(i[0]) + ', ' + str(round(i[1], 6)) + '\n')
 
     wc = WordCloud(width=1280, height=720,
                    font_path='/home/cdcq/Downloads/SmileySans-Oblique.ttf',
                    background_color='white', max_words=100)
-    wc.generate_from_frequencies(word_count)
+
+    if configs['mode'] == 'feature':
+        wc.generate_from_frequencies(diff_rate)
+    elif configs['mode'] == 'frequency':
+        wc.generate_from_frequencies(word_count_user)
+
     wc.to_file('./result.png')
 
 
