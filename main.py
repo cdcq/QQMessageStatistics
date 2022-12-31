@@ -3,7 +3,13 @@ import sys
 import time
 import jieba.posseg as pseg
 import yaml
+from enum import Enum
 from wordcloud import WordCloud
+
+
+class Mode(Enum):
+    FEATURE = 'feature'
+    FREQUENCY = 'frequency'
 
 
 def split_content(content):
@@ -59,6 +65,11 @@ def main():
     with open('./configs.yaml', 'r') as f:
         configs = yaml.load(f.read(), Loader=yaml.Loader)
 
+    modes = [i.value for i in Mode]
+    if configs['mode'] not in modes:
+        print('Mode is wrong.')
+        exit(0)
+
     with open(configs['file_path'], 'r') as f:
         s = f.read()
         s = s.replace('[图片]', '').replace('[表情]', '')
@@ -78,7 +89,7 @@ def main():
                 for k, pt in words:
                     if len(k) == 1:
                         continue
-                        
+
                     if k not in word_count:
                         word_count[k] = 1
                     else:
@@ -110,12 +121,12 @@ def main():
             f.write(str(i[0]) + ', ' + str(round(i[1], 6)) + '\n')
 
     wc = WordCloud(width=1280, height=720,
-                   font_path='/home/cdcq/Downloads/SmileySans-Oblique.ttf',
+                   font_path='./SmileySans-Oblique.ttf',
                    background_color='white', max_words=100)
 
-    if configs['mode'] == 'feature':
+    if configs['mode'] == Mode.FEATURE.value:
         wc.generate_from_frequencies(diff_rate)
-    elif configs['mode'] == 'frequency':
+    elif configs['mode'] == Mode.FREQUENCY.value:
         wc.generate_from_frequencies(word_count_user)
 
     wc.to_file('./result.png')
