@@ -96,7 +96,7 @@ def main():
                    font_path='/home/cdcq/Downloads/SmileySans-Oblique.ttf',
                    background_color='white', max_words=100)
     wc.generate_from_frequencies(word_count)
-    wc.to_file('./example.png')
+    wc.to_file('./result.png')
 
 
 def test():
